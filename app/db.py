@@ -1,17 +1,18 @@
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./sql_app.db"
+
+engine = create_async_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, echo=True
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
@@ -31,27 +32,23 @@ class FilesBase(BaseModel):
     number_word: int
 
 
-def get_session():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
+        yield session
 
 
-def add_file_to_db(session, files_data):
+async def add_file_to_db(session, files_data):
     files = Files(**files_data.dict())
     session.add(files)
-    session.commit()
-    session.refresh(files)
+    await session.commit()
 
 
-def get_file_from_db(session):
+async def get_file_from_db(session: AsyncSession):
 
-    files = session.scalars(
+    files = await session.execute(
         select(Files)
-    ).all()
+    )
 
-    return files
+    return files.scalars().all()
 
 
