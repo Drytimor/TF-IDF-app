@@ -65,14 +65,15 @@ async def TF_IDF_func(total_number_words, file_data_from_request, prepare_string
         word: {'TF': TF_Function(count, total_number_words)} for word, count in file_data_from_request.items()
     }
 
-    total_number_documents = len(all_files_from_db)
+    total_number_documents = 0
 
     for file in all_files_from_db:
+        total_number_documents += 1
         with open(file.file_path, 'r') as f:
-            text = f.read().split()
+            text = f.read()
             for word in file_data_from_request:
                 response_result_dict[word].setdefault('num', 0)
-                if word in set(text):
+                if re.search(word, text):
                     response_result_dict[word]['num'] += 1
 
     for word, data in response_result_dict.items():
