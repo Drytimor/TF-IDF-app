@@ -25,11 +25,13 @@ class Files(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     file_path: Mapped[str]
+    file_name: Mapped[str]
     number_word: Mapped[int]
 
 
 class FilesBase(BaseModel):
     file_path: str
+    file_name: str
     number_word: int
 
 
@@ -52,5 +54,14 @@ async def get_file_from_db(session: AsyncSession):
         select(Files)
     )
     return files.scalars().all()
+
+
+async def get_last_file_from_db(session: AsyncSession):
+
+    file = await session.execute(
+        select(Files)
+        .order_by(Files.id.desc())
+    )
+    return file.first()
 
 

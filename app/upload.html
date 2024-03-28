@@ -8,21 +8,20 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div class="row align-items-center">
+      <div class="row align-items">
 
-        <div class="col-3">
+        <div class="col-3 p-5">
+            <form action="/add" enctype="multipart/form-data" method="post">
+                <input name="file" type="file" multiple>
+                <input type="submit">
+            </form>
         </div>
 
-        <div class="col-6">
-            <div class="p-5">
-                <form action="/" enctype="multipart/form-data" method="post">
-                    <input name="file" type="file" multiple>
-                    <input type="submit">
-                </form>
-            </div>
+        <div class="col-6 p-5">
+
         </div>
 
-        <div class="col-3">
+        <div class="col-3 p-5">
         </div>
         </div>
 
