@@ -40,10 +40,10 @@ async def upload_file(
         request: Request, file: UploadFile, session: db.SessionDep,
 ):
     _bytes = await file.read()
-    total_number_words, word_list, prepare_string_words = await prepare_data(_bytes)
+    total_number_words, word_list = await prepare_data(_bytes)
     file_data_from_request = dict(Counter(word_list))
     result_TF_IDF_file, all_files_from_db = await TF_IDF_func(
-        total_number_words, file_data_from_request, prepare_string_words, file.filename, session
+        total_number_words, file_data_from_request, file.filename, session
     )
     return templates.TemplateResponse(
             request=request, name='table.html',
@@ -62,14 +62,12 @@ async def get_table_results(session: AsyncSession):
 async def prepare_data(_bytes: bytes):
     text = _bytes.decode('utf-8')
     word_list = []
-    string_words = ''
     regex = re.compile("[" + re.escape(string.punctuation) + "\\d" + "\\s" + "—" + "«" + "»" + "]")
     for word in text.lower().split():
         word = re.sub(regex, '', word)
         if word:
             word_list.append(word)
-            string_words += word + ' '
-    return len(word_list), word_list, string_words
+    return len(word_list), word_list
 
 
 async def TF_IDF_func(
