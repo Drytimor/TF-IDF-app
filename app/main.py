@@ -69,6 +69,8 @@ async def TF_IDF_func(
         session: AsyncSession
 ):
     if file_data_from_request:
+        # TODO: - заменить txt на csv
+        # TODO: - исходный подготовленный словарь сразу записывать в csv файл
         with open(FILE_PATH.format(filename=filepath), 'w') as f:
             f.write(prepare_string_words)
             files_data = db.FilesBase(
