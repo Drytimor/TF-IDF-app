@@ -1,9 +1,10 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from typing import Annotated
+from fastapi import Depends
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./sql_app.db"
@@ -37,6 +38,8 @@ async def get_session() -> AsyncSession:
         yield session
 
 
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
+
 async def add_file_to_db(session, files_data):
     files = Files(**files_data.dict())
     session.add(files)
@@ -48,7 +51,6 @@ async def get_file_from_db(session: AsyncSession):
     files = await session.execute(
         select(Files)
     )
-
     return files.scalars().all()
 
 

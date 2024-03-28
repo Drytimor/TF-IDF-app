@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, UploadFile, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 import string
 import re
 from collections import Counter
@@ -27,7 +27,7 @@ async def upload_file_form(request: Request):
 
 @app.post('/', response_class=HTMLResponse)
 async def upload_file(
-        request: Request, file: UploadFile, session: Session = Depends(db.get_session),
+        request: Request, file: UploadFile, session: db.SessionDep,
 ):
     _bytes = await file.read()
     filename = datetime.now().strftime('%Y%m%d%H%S') + file.filename
@@ -39,7 +39,7 @@ async def upload_file(
     )
 
 
-async def prepare_data(_bytes):
+async def prepare_data(_bytes: bytes):
     text = _bytes.decode('utf-8')
     word_list = []
     string_words = ''
@@ -52,8 +52,10 @@ async def prepare_data(_bytes):
     return len(word_list), word_list, string_words
 
 
-async def TF_IDF_func(total_number_words, file_data_from_request, prepare_string_words, filename, session):
-
+async def TF_IDF_func(
+        total_number_words: int, file_data_from_request: dict,
+        prepare_string_words: str, filename: str, session: AsyncSession
+):
     with open(FILE_PATH.format(filename=filename), 'w') as f:
         f.write(prepare_string_words)
         files_data = db.FilesBase(file_path=f.name, number_word=total_number_words)
