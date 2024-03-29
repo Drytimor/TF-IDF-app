@@ -1,10 +1,12 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from pydantic import BaseModel
+from pydantic.functional_validators import AfterValidator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import Annotated
 from fastapi import Depends
+from utils import sync_create_path_to_csvfile
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./sql_app.db"
@@ -29,8 +31,11 @@ class Files(Base):
     number_word: Mapped[int]
 
 
+CSVFilePath = Annotated[str, AfterValidator(sync_create_path_to_csvfile)]
+
+
 class FilesBase(BaseModel):
-    file_path: str
+    file_path: CSVFilePath
     file_name: str
     number_word: int
 
@@ -42,7 +47,7 @@ async def get_session() -> AsyncSession:
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
-async def add_file_to_db(session, files_data):
+async def create_file_to_db(session, files_data):
     files = Files(**files_data.dict())
     session.add(files)
     await session.commit()
