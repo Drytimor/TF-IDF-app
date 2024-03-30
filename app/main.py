@@ -33,7 +33,7 @@ async def upload_file(
 
 @app.get('/table', response_class=HTMLResponse)
 async def display_results_table(
-        request: Request, filename: Annotated[str, Query()], session: SessionDep
+    request: Request, filename: Annotated[str, Query()], session: SessionDep
 ):
     result_TF_IDF_file, all_files_from_db = await (
         calculate_TF_IDF_measure(filename, session)

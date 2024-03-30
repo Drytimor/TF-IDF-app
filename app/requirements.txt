@@ -6,3 +6,4 @@ uvicorn[standard]
 ipython==8.22.2
 aiosqlite==0.20.0
 pydantic-settings==2.2.1
+aiologger==0.7.0

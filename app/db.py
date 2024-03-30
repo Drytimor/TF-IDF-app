@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import Annotated
 from fastapi import Depends
-from utils import sync_create_path_to_csvfile
+from utils import create_path_to_csvfile
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./sql_app.db"
@@ -31,7 +31,7 @@ class Files(Base):
     number_word: Mapped[int]
 
 
-CSVFilePath = Annotated[str, AfterValidator(sync_create_path_to_csvfile)]
+CSVFilePath = Annotated[str, AfterValidator(create_path_to_csvfile)]
 
 
 class FilesBase(BaseModel):

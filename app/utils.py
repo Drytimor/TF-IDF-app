@@ -1,6 +1,6 @@
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager, ExitStack
 from collections import Counter
-from typing import AsyncIterator
+from typing import AsyncIterator, Iterator, TextIO
 from config import settings
 import string
 import re
@@ -31,13 +31,7 @@ async def _IDF_Function(total_number_documents, number_documents_with_word) -> f
     return round(log10(total_number_documents / number_documents_with_word), 4)
 
 
-async def create_path_to_csvfile(filename: str) -> str:
-    file_csv = re.sub(r'\.txt', '.csv', filename)
-    filepath = os.path.join(settings.DIR_PATH_DOWNLOAD, file_csv)
-    return filepath
-
-
-def sync_create_path_to_csvfile(filename: str) -> str:
+def create_path_to_csvfile(filename: str) -> str:
     file_csv = re.sub(r'\.txt', '.csv', filename)
     filepath = os.path.join(settings.DIR_PATH_DOWNLOAD, file_csv)
     return filepath
@@ -54,17 +48,27 @@ async def create_dict_with_count_words(words: list, total_number_words: int) -> 
 
 
 
-@asynccontextmanager
-async def open_csvfile(
+@contextmanager
+def open_csvfile(
         filename: str, mode: str = 'r', **kwargs
-) -> AsyncIterator[None]:
-
-    filename = await create_path_to_csvfile(filename)
+):
+    filename = create_path_to_csvfile(filename)
 
     file = open(filename, mode, **kwargs)
 
     try:
         yield file
-
     finally:
         file.close()
+
+
+@contextmanager
+def open_csvfiles(files: list):
+    l = []
+    with ExitStack() as stack:
+        for f in files:
+            l.append(stack.enter_context(open(f.file_path, 'r', newline='')))
+        try:
+            yield l
+        finally:
+            stack.pop_all().close()
